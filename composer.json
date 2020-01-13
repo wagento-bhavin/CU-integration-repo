@@ -1,0 +1,7 @@
+{
+    "require": {
+        "ramsey/uuid": "^3.8",
+        "league/html-to-markdown": "^4.8",
+        "phpclassic/php-shopify": "^1.1"
+    }
+}
