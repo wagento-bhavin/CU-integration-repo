@@ -90,69 +90,70 @@ if(!$err){
 
 		//Create or Update categories
 		$type = "POST";
-		if(sizeof($result) > 0){
-			$url  = 'https://api-dev.cheddarup.com/api/users/tabs/'.$col_id.'/categories/'.$result[0]['id'];
-			$type = "PATCH";
-		}
-		$existingUuid = [];
-        foreach($result[0]['options']['subcategories'] as $key => $listSubCat):
-            $existSubCategories[$result[0]['id']][] = $listSubCat['name'];
-            $existingUuid[$listSubCat['name']] = $listSubCat['uuid'];
-        endforeach;
+		if(sizeof($result) > 0) {
+            $url = 'https://api-dev.cheddarup.com/api/users/tabs/' . $col_id . '/categories/' . $result[0]['id'];
+            $type = "PATCH";
 
-        $subcat_data = array();
-        $subcat_data1 = array();
-		foreach ($categories[$col_name] as $subcategory) {
-            if ( !empty($existSubCategories[$result[0]['id']])) {
+            $existingUuid = [];
+            foreach ($result[0]['options']['subcategories'] as $key => $listSubCat):
+                $existSubCategories[$result[0]['id']][] = $listSubCat['name'];
+                $existingUuid[$listSubCat['name']] = $listSubCat['uuid'];
+            endforeach;
 
-                if (!in_array($subcategory, $existSubCategories[$result[0]['id']])) {
+            $subcat_data = array();
+            $subcat_data1 = array();
+            foreach ($categories[$col_name] as $subcategory) {
+                if (!empty($existSubCategories[$result[0]['id']])) {
+
+                    if (!in_array($subcategory, $existSubCategories[$result[0]['id']])) {
+                        $uuid = Uuid::uuid4();
+                        $uuid = $uuid->toString();
+                        $temp = array(
+                            'name' => $subcategory,
+                            'uuid' => $uuid
+                        );
+                        $temp = array(
+                            'name' => $subcategory,
+                            'uuid' => $uuid
+                        );
+                        array_push($subcat_data1, $temp);
+                    } else {
+                        $temp = array(
+                            'name' => $subcategory,
+                            'uuid' => $existingUuid[$subcategory]
+                        );
+                        array_push($subcat_data1, $temp);
+                    }
+                } else {
                     $uuid = Uuid::uuid4();
                     $uuid = $uuid->toString();
                     $temp = array(
-                        'name' =>  $subcategory,
+                        'name' => $subcategory,
                         'uuid' => $uuid
                     );
-                    $temp = array(
-                        'name' =>  $subcategory,
-                        'uuid' => $uuid
-                    );
-                    array_push($subcat_data1, $temp);
-                } else {
-                    $temp = array(
-                        'name' =>  $subcategory,
-                        'uuid' => $existingUuid[$subcategory]
-                    );
-                    array_push($subcat_data1, $temp);
+                    array_push($subcat_data, $temp);
                 }
-            } else {
-                $uuid = Uuid::uuid4();
-                $uuid = $uuid->toString();
-                $temp = array(
-                    'name' =>  $subcategory,
-                    'uuid' => $uuid
-                );
-                array_push($subcat_data, $temp);
             }
-		}
-	    $data = array(
-	        'name'		=> $col_name,
-	        'anchor'	=> true,
-	        'options' 	=> array(
-	            'subcategories' => !empty($subcat_data1) ? $subcat_data1 : $subcat_data
-	        )
-	    );
-		$payload = json_encode($data);
+            $data = array(
+                'name' => $col_name,
+                'anchor' => true,
+                'options' => array(
+                    'subcategories' => !empty($subcat_data1) ? $subcat_data1 : $subcat_data
+                )
+            );
+            $payload = json_encode($data);
 
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $url);
-		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $type);
-		curl_setopt($ch, CURLOPT_HTTP_VERSION, 'CURL_HTTP_VERSION_1_1');
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
-		curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-		$err    = curl_error($ch);
-		$result = json_decode(curl_exec($ch), true);
-		curl_close($ch);
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $type);
+            curl_setopt($ch, CURLOPT_HTTP_VERSION, 'CURL_HTTP_VERSION_1_1');
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $payload);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
+            $err = curl_error($ch);
+            $fin_result = json_decode(curl_exec($ch), true);
+            curl_close($ch);
+        }
 	}
 }
 
