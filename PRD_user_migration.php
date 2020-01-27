@@ -2,9 +2,12 @@
 
 //DB Credentials
 $servername = "localhost";
-$username = "cemmlxmy_admin";
+/*$username = "cemmlxmy_admin";
 $password = 'tKR+uEee?7RS';
-$dbname = "cemmlxmy_CU_PRD";
+$dbname = "cemmlxmy_users";*/
+$username = "ycfssmjzrs";
+$password = 'BPc98qqeVA';
+$dbname = "ycfssmjzrs";
 
 $api_key = "eyJ0eXAiOiJDbGllbnQiLCJzdWIiOiJjOTg1ZWI3Mi0xMjRkLTQxMWYtYThlYi03NDRlODIxZGU3MGUiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiJjZDBhMTkxMy04ZGUwLTRjMmQtYTMzZC03ZDc0YTJhYzM5NjciLCJleHAiOjQ3Mjg5NTAxMzgsImRhdGEiOnsiY2xpZW50X2lkIjoiYzk4NWViNzItMTI0ZC00MTFmLWE4ZWItNzQ0ZTgyMWRlNzBlIiwicGF5bG9hZCI6eyJjbGllbnQiOnsidXVpZCI6ImM5ODVlYjcyLTEyNGQtNDExZi1hOGViLTc0NGU4MjFkZTcwZSJ9fX19.JCfFmFrGychiv1aWJ6WmLzVR0CB0bIXTFL6o7Dge4vs";
 $partner_uuid 	= 'f9dceb72-3460-40d3-b6e8-beca443642cf';
@@ -22,7 +25,7 @@ if ($conn->connect_error) {
     die("Connection failed: " . $conn->connect_error);
 } 
 //Fetch Shopify Customer Data
-$count_url = "https://4d87206512af68fc951ce70348bb8105:10ee2c6ba02eef12fdda08912d318c49@pixielanekidz.myshopify.com/admin/api/2019-07/customers/count.json";
+$count_url = "https://4d87206512af68fc951ce70348bb8105:10ee2c6ba02eef12fdda08912d318c49@pixielanekidz.myshopify.com/admin/api/2020-01/customers/count.json";
 $total = file_get_contents($count_url);
 $total = json_decode($total,true);
 $total = $total['count'];
@@ -30,7 +33,7 @@ $page = ceil($total / 250);
 $count = 0;
 $wholesale_count = 0;
 for ($i=1; $i <= $page ; $i++) { 
-	$url = "https://4d87206512af68fc951ce70348bb8105:10ee2c6ba02eef12fdda08912d318c49@pixielanekidz.myshopify.com/admin/api/2019-07/customers.json?limit=250&page=".$i;
+	$url = "https://4d87206512af68fc951ce70348bb8105:10ee2c6ba02eef12fdda08912d318c49@pixielanekidz.myshopify.com/admin/api/2020-01/customers.json?limit=250&page=".$i;
 	$contents = file_get_contents($url);
 	$customers = json_decode($contents,true);
 	$customers = $customers["customers"];
@@ -102,8 +105,8 @@ for ($i=1; $i <= $page ; $i++) {
 
 		$tags 	= implode(';', $tags);
 
-		$sql = "INSERT INTO cheddarup_users (shopify_id, email, cheddarup_id, uuid, created_at, updated_at, token)
-		VALUES ('{$customer_id}','{$email}','{$id}','{$uuid}','{$created}','{$updated}','{$tags}')";
+		$sql = "INSERT INTO cheddarup_users (shopify_id, email, cheddarup_id, uuid, created_at, updated_at, tags, token)
+		VALUES ('{$customer_id}','{$email}','{$id}','{$uuid}','{$created}','{$updated}','{$tags}', '{$token}')";
 		if ($conn->query($sql) === TRUE) {
 		    echo "New record created successfully";
 		} else {
