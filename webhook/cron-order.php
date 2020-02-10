@@ -21,6 +21,7 @@ $sizes['Men'] = ['Size_XXS', 'Size_XS', 'Size_S', 'Size_M', 'Size_L', 'Size_XL']
 $file = 'Order_Cron.md';
 $errorLog = "inventory.log";
 
+
 $conn = new mysqli($servername, $username, $password, $dbname);
 
 /**
@@ -31,12 +32,12 @@ $conn = new mysqli($servername, $username, $password, $dbname);
  */
 function writeToFile($text_to_write, $url, $file, $result)
 {
-    $text_to_write .= "<br/>";
-    $text_to_write .= $url . "<br/>";
-    $text_to_write .= "<br/>Result<br/>";
-    $text_to_write .= "```javascript<br/>";
+    $text_to_write .= "\n";
+    $text_to_write .= $url . "\n";
+    $text_to_write .= "\nResult\n";
+    $text_to_write .= "```javascript\n";
     $text_to_write .= $result;
-    $text_to_write .= "<br/>```<br/>";
+    $text_to_write .= "\n```\n";
     file_put_contents($file, $text_to_write, FILE_APPEND);
 }
 
@@ -47,13 +48,14 @@ if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $posts[] = $row;
     }
+    writeToFile(print_r($posts, true),'',$file,'');
     foreach ($posts as $post) {
         $line_items = unserialize($post['items']);
 
-        echo "<br/>For customer Id: '{$post['customer_id']}' <br/>";
+        echo "\nFor customer Id: '{$post['customer_id']}' \n";
         //exit;
         $user_uuid = $post["uuid"];
-        echo $user_uuid . "<br/>";
+        echo $user_uuid . "\n";
         $url = 'https://api-dev.cheddarup.com/api/users/tabs';
         $header = array(
             'Content-Type: application/json',
@@ -80,14 +82,16 @@ if ($result->num_rows > 0) {
         foreach ($line_items as $key => $line_item) {
             if ($post['customer_id'] == $line_item['customer_id']) {
 
+                writeToFile(print_r($line_item, true),'',$file,'');
+
                 $product_id = $line_item['product_id'];
                 $variant_id = $line_item['variant_id'];
                 $quantity = $line_item['quantity'];
                 $sku = $line_item['sku'];
                 $orderId = $line_item['order_id'];
                 $variant_option = '';
-                echo "<br/>Items count {$itemsCount} for order '{$orderId}' for product '{$product_id}'<br/>";
-                // Get all items
+                echo "\nItems count {$itemsCount} for order '{$orderId}' for product '{$product_id}'\n";
+                /*// Get all items
                 $url = 'https://api-dev.cheddarup.com/api/users/tabs/' . $catalog_id . '/items';
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, $url);
@@ -103,7 +107,7 @@ if ($result->num_rows > 0) {
                 }
                 $result = json_decode(curl_exec($ch), true);
                 writeToFile('# Get All Items', $url, $file, curl_exec($ch));
-                curl_close($ch);
+                curl_close($ch);*/
                 $seletVariantSql = "select * from shopify_variant where variant_id = '{$variant_id}' and order_id = '{$orderId}'";
                 $variantResult = mysqli_query($conn, $seletVariantSql);
                 // If variant data exist
@@ -165,11 +169,13 @@ if ($result->num_rows > 0) {
                     continue;
                 }
                 $result = json_decode(curl_exec($ch), true);
+                writeToFile('# Get Items', $url, $file, curl_exec($ch));
                 curl_close($ch);
 
                 if (sizeof($result) > 0) {
                     foreach ($result as $result_item) {
                         if ($result_item['catalog_object_id'] == $item_id) {
+                            writeToFile(print_r($result_item, true),'',$file,'');
                             $new_id = $result_item['id'];
                             $data = array(
                                 'change' => $quantity,
@@ -209,6 +215,8 @@ if ($result->num_rows > 0) {
             }
         }
     }
+    echo "\nInventory Updated Successfully\n";
 }
 $conn->close();
+exit;
 ?>
