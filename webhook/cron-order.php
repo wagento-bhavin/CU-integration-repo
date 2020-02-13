@@ -2,12 +2,12 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 $servername = "localhost";
-$username = "cemmlxmy_admin";
+/*$username = "cemmlxmy_admin";
 $password = 'tKR+uEee?7RS';
-$dbname = "cemmlxmy_users";
-/*$username = "ycfssmjzrs";
+$dbname = "cemmlxmy_users";*/
+$username = "ycfssmjzrs";
 $password = 'BPc98qqeVA';
-$dbname = "ycfssmjzrs";*/
+$dbname = "ycfssmjzrs";
 
 $api_key = 'eyJ0eXAiOiJDbGllbnQiLCJzdWIiOiJlMmRhNjgxOC1mMTFlLTQzYTUtYjhlMS00MmY0YzQ1OWViNTMiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIwMGVlODg0My1mOWI2LTRmZjMtYmFjMC1jYzVkZWJjZTA3NTciLCJleHAiOjE4OTQ5MTMxNTQsImRhdGEiOnsiY2xpZW50X2lkIjoiZTJkYTY4MTgtZjExZS00M2E1LWI4ZTEtNDJmNGM0NTllYjUzIiwicGF5bG9hZCI6eyJjbGllbnQiOnsidXVpZCI6ImUyZGE2ODE4LWYxMWUtNDNhNS1iOGUxLTQyZjRjNDU5ZWI1MyJ9fX19.QA77p82AicXUxpIt-TOvEtopx4ikExctv8RvyDe8iPc';
 
