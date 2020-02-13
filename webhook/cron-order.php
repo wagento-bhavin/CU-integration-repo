@@ -2,12 +2,12 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 $servername = "localhost";
-/*$username = "cemmlxmy_admin";
+$username = "cemmlxmy_admin";
 $password = 'tKR+uEee?7RS';
-$dbname = "cemmlxmy_users";*/
-$username = "ycfssmjzrs";
+$dbname = "cemmlxmy_users";
+/*$username = "ycfssmjzrs";
 $password = 'BPc98qqeVA';
-$dbname = "ycfssmjzrs";
+$dbname = "ycfssmjzrs";*/
 
 $api_key = 'eyJ0eXAiOiJDbGllbnQiLCJzdWIiOiJlMmRhNjgxOC1mMTFlLTQzYTUtYjhlMS00MmY0YzQ1OWViNTMiLCJhbGciOiJIUzI1NiJ9.eyJqdGkiOiIwMGVlODg0My1mOWI2LTRmZjMtYmFjMC1jYzVkZWJjZTA3NTciLCJleHAiOjE4OTQ5MTMxNTQsImRhdGEiOnsiY2xpZW50X2lkIjoiZTJkYTY4MTgtZjExZS00M2E1LWI4ZTEtNDJmNGM0NTllYjUzIiwicGF5bG9hZCI6eyJjbGllbnQiOnsidXVpZCI6ImUyZGE2ODE4LWYxMWUtNDNhNS1iOGUxLTQyZjRjNDU5ZWI1MyJ9fX19.QA77p82AicXUxpIt-TOvEtopx4ikExctv8RvyDe8iPc';
 
@@ -18,28 +18,10 @@ $sizes['Babies'] = ['Size_3/6', 'Size_6/12', 'Size_12/18', 'Size_18/24'];
 $sizes['Women'] = ['Size_XXS', 'Size_XS', 'Size_S', 'Size_M', 'Size_L', 'Size_XL'];
 $sizes['Men'] = ['Size_XXS', 'Size_XS', 'Size_S', 'Size_M', 'Size_L', 'Size_XL'];
 
-$file = 'Order_Cron.md';
 $errorLog = "inventory.log";
 
 
 $conn = new mysqli($servername, $username, $password, $dbname);
-
-/**
- * @param $text_to_write
- * @param $url
- * @param $file
- * @param $result
- */
-function writeToFile($text_to_write, $url, $file, $result)
-{
-    $text_to_write .= "\n";
-    $text_to_write .= $url . "\n";
-    $text_to_write .= "\nResult\n";
-    $text_to_write .= "```javascript\n";
-    $text_to_write .= $result;
-    $text_to_write .= "\n```\n";
-    file_put_contents($file, $text_to_write, FILE_APPEND);
-}
 
 $selectQuery = "SELECT *, uuid FROM order_request left join cheddarup_users on order_request.customer_id = cheddarup_users.shopify_id where cron_status = 'pending'";
 $result = $conn->query($selectQuery);
@@ -48,14 +30,12 @@ if ($result->num_rows > 0) {
     while ($row = $result->fetch_assoc()) {
         $posts[] = $row;
     }
-    writeToFile(print_r($posts, true),'',$file,'');
     foreach ($posts as $post) {
         $line_items = unserialize($post['items']);
 
         echo "\nFor customer Id: '{$post['customer_id']}' \n";
         //exit;
         $user_uuid = $post["uuid"];
-        echo $user_uuid . "\n";
         $url = 'https://api-dev.cheddarup.com/api/users/tabs';
         $header = array(
             'Content-Type: application/json',
@@ -70,7 +50,6 @@ if ($result->num_rows > 0) {
         curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
         $err = curl_error($ch);
         $result = json_decode(curl_exec($ch), true);
-        writeToFile('# Get Collection', $url, $file, curl_exec($ch));
         curl_close($ch);
         $catalog_id = "";
         foreach ($result as $collections) {
@@ -81,9 +60,6 @@ if ($result->num_rows > 0) {
         $itemsCount = 1;
         foreach ($line_items as $key => $line_item) {
             if ($post['customer_id'] == $line_item['customer_id']) {
-
-                writeToFile(print_r($line_item, true),'',$file,'');
-
                 $product_id = $line_item['product_id'];
                 $variant_id = $line_item['variant_id'];
                 $quantity = $line_item['quantity'];
@@ -91,23 +67,6 @@ if ($result->num_rows > 0) {
                 $orderId = $line_item['order_id'];
                 $variant_option = '';
                 echo "\nItems count {$itemsCount} for order '{$orderId}' for product '{$product_id}'\n";
-                /*// Get all items
-                $url = 'https://api-dev.cheddarup.com/api/users/tabs/' . $catalog_id . '/items';
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
-                curl_setopt($ch, CURLOPT_HTTP_VERSION, 'CURL_HTTP_VERSION_1_1');
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
-                $err = curl_error($ch);
-                if ($err) {
-                    file_put_contents($errorLog, 'Get Ietms for ' . $orderId, FILE_APPEND);
-                    file_put_contents($errorLog, print_r($err, true), FILE_APPEND);
-                    continue;
-                }
-                $result = json_decode(curl_exec($ch), true);
-                writeToFile('# Get All Items', $url, $file, curl_exec($ch));
-                curl_close($ch);*/
                 $seletVariantSql = "select * from shopify_variant where variant_id = '{$variant_id}' and order_id = '{$orderId}'";
                 $variantResult = mysqli_query($conn, $seletVariantSql);
                 // If variant data exist
@@ -150,7 +109,6 @@ if ($result->num_rows > 0) {
                 curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
                 $err = curl_error($ch);
                 $result = json_decode(curl_exec($ch));
-                writeToFile('# Add From a Catalog onto a Collection', $url, $file, curl_exec($ch));
                 if ($err) {
                     file_put_contents($errorLog, 'Add catalog ' . $orderId, FILE_APPEND);
                     file_put_contents($errorLog, print_r($err, true), FILE_APPEND);
@@ -169,13 +127,11 @@ if ($result->num_rows > 0) {
                     continue;
                 }
                 $result = json_decode(curl_exec($ch), true);
-                writeToFile('# Get Items', $url, $file, curl_exec($ch));
                 curl_close($ch);
 
                 if (sizeof($result) > 0) {
                     foreach ($result as $result_item) {
                         if ($result_item['catalog_object_id'] == $item_id) {
-                            writeToFile(print_r($result_item, true),'',$file,'');
                             $new_id = $result_item['id'];
                             $data = array(
                                 'change' => $quantity,
@@ -195,7 +151,6 @@ if ($result->num_rows > 0) {
                             $err = curl_error($ch);
                             $result = json_decode(curl_exec($ch), true);
                             $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-                            writeToFile('# Adjust Variant Quantity', $url, $file, curl_exec($ch));
                             if ($err) {
                                 file_put_contents($errorLog, 'Error on update quantity for the' . $orderId . ' for product ' . $product_id, FILE_APPEND);
                                 file_put_contents($errorLog, print_r($err, true), FILE_APPEND);
